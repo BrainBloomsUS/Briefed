@@ -139,7 +139,7 @@ function SectionBlock({ section }: { section: GuideSection }) {
 // ── Course card ───────────────────────────────────────────────
 function CourseCard({ course, index, defaultOpen }: { course: GuideCourse; index: number; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen ?? false)
-  const colors = ['#C0392B','#1A5276','#16A34A','#D97706','#7C3AED','#0891B2','#BE185D','#D97706','#059669','#7C3AED','#1D4ED8','#B45309']
+  const colors = ['#1B4F72','#148F77','#1A5276','#7D6608','#6C3483','#0E6655','#1F618D','#B7770D','#117A65','#5B2C6F','#154360','#784212']
   const color = colors[index % colors.length]
 
   return (
@@ -510,13 +510,13 @@ function Nav() {
   return (
     <nav className="nav">
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
-        <div style={{ width: 28, height: 28, background: 'var(--brand)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ color: 'white', fontWeight: 900, fontSize: '0.75rem', letterSpacing: '-0.02em' }}>B</span>
+        <div style={{ width: 32, height: 32, background: 'var(--brand)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <span style={{ color: 'white', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1 }}>B</span>
         </div>
-        <span style={{ fontWeight: 900, fontSize: '1.1rem', color: 'var(--brand)', letterSpacing: '-0.03em' }}>
+        <span style={{ fontWeight: 900, fontSize: '1.25rem', color: 'var(--brand)', letterSpacing: '-0.04em' }}>
           Briefed
         </span>
-        <span style={{ fontSize: '0.65rem', fontWeight: 700, background: 'var(--brand)', color: 'white', padding: '2px 6px', borderRadius: 4, marginLeft: 2 }}>BETA</span>
+        <span style={{ fontSize: '0.6rem', fontWeight: 700, background: 'var(--brand)', color: 'white', padding: '2px 7px', borderRadius: 4, marginLeft: 2, letterSpacing: '0.05em' }}>BETA</span>
       </div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <span style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)' }}>Powered by Claude AI</span>
@@ -536,7 +536,7 @@ function Hero() {
       </div>
       <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 900, color: 'white', lineHeight: 1.1, marginBottom: 16, letterSpacing: '-0.03em' }}>
         Get fully
-        <span style={{ background: 'linear-gradient(135deg, #FFD700, #FFA500)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+        <span style={{ background: 'linear-gradient(135deg, #52D9C1, #A8EDDF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
           {' '}briefed{' '}
         </span>
         on any role
@@ -775,14 +775,17 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer style={{ borderTop: '1px solid var(--border)', padding: '24px', textAlign: 'center', background: 'white' }}>
+      <footer style={{ borderTop: '1px solid var(--border)', padding: '28px 24px', textAlign: 'center', background: 'white' }}>
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
-          <div style={{ fontWeight: 900, fontSize: '1rem', color: 'var(--brand)', letterSpacing: '-0.03em', marginBottom: 4 }}>
+          <div style={{ fontWeight: 900, fontSize: '1.1rem', color: 'var(--brand)', letterSpacing: '-0.04em', marginBottom: 6 }}>
             Briefed
           </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', lineHeight: 1.6 }}>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 10 }}>
             Know your role before day one. Built for sales reps, solutions engineers, and anyone preparing for a new role.
-            <br />Powered by <strong>Claude AI</strong> by Anthropic.
+          </div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', lineHeight: 1.6, borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 4 }}>
+            © {new Date().getFullYear()} Brain Blooms LLC · All rights reserved · Briefed is a product of Brain Blooms LLC
+            <br />Powered by <strong style={{ color: 'var(--text-secondary)' }}>Claude AI</strong> by Anthropic
           </div>
         </div>
       </footer>
