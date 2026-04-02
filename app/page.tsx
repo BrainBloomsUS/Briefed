@@ -219,7 +219,9 @@ function CareerSection({ tips }: { tips: string[] }) {
   return (
     <div className={`course-card fade-up ${open ? 'open' : ''}`}>
       <div className="course-header" onClick={() => setOpen(o => !o)} role="button">
-        <div className="course-num" style={{ background: '#D97706', fontSize: '0.6rem' }}>💼</div>
+        <div className="course-num" style={{ background: '#B7770D', fontSize: '0.6rem' }}>
+          <span className="mat-icon" style={{ fontSize: '16px', color: 'white' }}>workspace_premium</span>
+        </div>
         <div className="course-meta">
           <div className="course-title">Career strategy & role-specific tips</div>
           <div className="course-subtitle">{tips.length} actionable tips for this exact position</div>
@@ -433,7 +435,7 @@ function InputForm({
               className="btn btn-secondary btn-sm"
               style={{ fontSize: '0.78rem' }}
             >
-              <span>{ex.emoji}</span> {ex.label}
+              {ex.label}
             </button>
           ))}
         </div>
@@ -546,14 +548,14 @@ function Hero() {
       </p>
       <div style={{ display: 'flex', justifyContent: 'center', gap: 24, flexWrap: 'wrap' }}>
         {[
-          { icon: '📚', text: 'Structured courses' },
-          { icon: '🎯', text: 'Competitor analysis' },
-          { icon: '📖', text: 'Full glossary' },
-          { icon: '💼', text: 'Career tips' },
-          { icon: '⬇️', text: 'Export to PDF' },
+          { icon: 'menu_book', text: 'Structured courses' },
+          { icon: 'analytics', text: 'Competitor analysis' },
+          { icon: 'library_books', text: 'Full glossary' },
+          { icon: 'trending_up', text: 'Career tips' },
+          { icon: 'download', text: 'Export to PDF' },
         ].map(item => (
           <div key={item.text} style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.85)', fontSize: '0.875rem' }}>
-            <span>{item.icon}</span>
+            <span className="mat-icon mat-icon-sm" style={{ color: 'rgba(255,255,255,0.75)' }}>{item.icon}</span>
             <span>{item.text}</span>
           </div>
         ))}
@@ -572,12 +574,12 @@ function HowItWorks() {
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }} className="steps-grid">
         {[
-          { n: '1', icon: '📋', title: 'Paste the job description', desc: 'Include the role title, company, responsibilities, and required skills. More detail = better brief.' },
-          { n: '2', icon: '🤖', title: 'AI builds your brief', desc: 'Claude researches the industry, products, competitors, and career path in real time.' },
-          { n: '3', icon: '🚀', title: 'Walk in knowing everything', desc: 'Read online, share with your team, or download a polished Word + PDF.' },
+          { n: '1', icon: 'description', title: 'Paste the job description', desc: 'Include the role title, company, responsibilities, and required skills. More detail = better brief.' },
+          { n: '2', icon: 'auto_fix_high', title: 'AI builds your brief', desc: 'Claude researches the industry, products, competitors, and career path in real time.' },
+          { n: '3', icon: 'verified', title: 'Walk in knowing everything', desc: 'Read online, share with your team, or download a polished Word + PDF.' },
         ].map(step => (
           <div key={step.n} className="card" style={{ padding: '20px', textAlign: 'center' }}>
-            <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>{step.icon}</div>
+            <span className="mat-icon mat-icon-lg" style={{ color: 'var(--brand)', marginBottom: 8, display: 'block' }}>{step.icon}</span>
             <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--brand)', color: 'white', fontSize: '0.75rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>{step.n}</div>
             <div style={{ fontWeight: 700, fontSize: '0.875rem', marginBottom: 6, color: 'var(--text-primary)' }}>{step.title}</div>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>{step.desc}</div>
