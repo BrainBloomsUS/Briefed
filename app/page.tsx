@@ -1,6 +1,6 @@
 'use client'
 import { useState, useRef, useCallback } from 'react'
-import type { GuideData, GuideCourse, GuideSection, GenerationStatus } from '@/lib/types'
+import type { GuideData, GuideCourse, GuideSection, GenerationStatus, ResumeAnalysis } from '@/lib/types'
 import { EXAMPLE_JDS } from '@/lib/constants'
 
 // ── Icons (inline SVG components) ────────────────────────────
@@ -60,6 +60,206 @@ const Icon = {
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
   ),
+}
+
+// ── Your Edge — Resume Analysis Section ──────────────────────
+function YourEdge({ analysis, role, company }: { analysis: ResumeAnalysis; role: string; company: string }) {
+  const [tpOpen, setTpOpen] = useState(false)
+  if (!analysis?.hasResume) return null
+
+  const scoreColor = analysis.matchScore >= 70 ? '#52D9C1' : analysis.matchScore >= 40 ? '#F0C040' : '#F08080'
+  const levelColors: Record<string, string> = {
+    technical: 'rgba(82,217,193,0.25)',
+    some: 'rgba(240,192,64,0.25)',
+    beginner: 'rgba(240,128,128,0.25)',
+  }
+
+  return (
+    <div className="edge-card fade-up">
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+        <div>
+          <div className="edge-label">Your Edge</div>
+          <div className="edge-title">Personalized Brief — {role} @ {company}</div>
+          <div className="edge-subtitle">Based on your resume cross-referenced against this job description</div>
+        </div>
+        <div style={{ background: levelColors[analysis.recommendedLevel] || 'rgba(255,255,255,0.1)', border: `1px solid ${scoreColor}40`, borderRadius: 'var(--r-full)', padding: '6px 14px', textAlign: 'center', flexShrink: 0 }}>
+          <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>Recommended level</div>
+          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: scoreColor }}>{analysis.matchLabel}</div>
+        </div>
+      </div>
+
+      {/* Match score bar */}
+      <div style={{ marginBottom: 20 }}>
+        <div className="match-score-row">
+          <div>
+            <div className="match-score-num" style={{ color: scoreColor }}>{analysis.matchScore}%</div>
+            <div className="match-score-label">Resume match to job description</div>
+          </div>
+          <div className="match-badge" style={{ borderColor: `${scoreColor}40`, color: scoreColor, background: `${scoreColor}15` }}>
+            {analysis.matchScore >= 70 ? 'Strong match' : analysis.matchScore >= 40 ? 'Partial match' : 'Growth opportunity'}
+          </div>
+        </div>
+        <div className="match-bar-wrap">
+          <div className="match-bar-fill" style={{ width: `${analysis.matchScore}%`, background: `linear-gradient(90deg, ${scoreColor}80, ${scoreColor})` }} />
+        </div>
+      </div>
+
+      {/* Strengths + Gaps grid */}
+      {(analysis.yourStrengths?.length > 0 || analysis.skillGaps?.length > 0) && (
+        <div className="edge-grid">
+          {analysis.yourStrengths?.length > 0 && (
+            <div className="edge-panel">
+              <div className="edge-panel-title green">✓ Your strengths for this role</div>
+              {analysis.yourStrengths.map((s, i) => (
+                <div className="edge-item" key={i}>
+                  <div className="edge-dot-green" />
+                  <span>{s}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {analysis.skillGaps?.length > 0 && (
+            <div className="edge-panel">
+              <div className="edge-panel-title amber">→ Areas to address</div>
+              {analysis.skillGaps.map((g, i) => (
+                <div className="edge-item" key={i}>
+                  <div className="edge-dot-amber" />
+                  <span>{g}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Talking points */}
+      {analysis.talkingPoints?.length > 0 && (
+        <div style={{ marginBottom: 14 }}>
+          <div
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', marginBottom: tpOpen ? 10 : 0 }}
+            onClick={() => setTpOpen(o => !o)}
+          >
+            <div className="edge-panel-title green" style={{ margin: 0 }}>Interview talking points ({analysis.talkingPoints.length})</div>
+            <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>{tpOpen ? '▲ hide' : '▼ show'}</span>
+          </div>
+          {tpOpen && (
+            <div className="talking-points-panel fade-in">
+              {analysis.talkingPoints.map((tp, i) => (
+                <div className="talking-point" key={i}>
+                  <div className="tp-num">{i + 1}</div>
+                  <span>{tp}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Elevator pitch */}
+      {analysis.positioningSummary && (
+        <div>
+          <div className="edge-panel-title green" style={{ marginBottom: 8 }}>Your elevator pitch for this role</div>
+          <div className="positioning-box">"{analysis.positioningSummary}"</div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Resume Upload Component ───────────────────────────────────
+function ResumeUpload({ onResumeParsed, resumeFileName }: {
+  onResumeParsed: (text: string, fileName: string) => void
+  resumeFileName: string
+}) {
+  const [isDragging, setIsDragging] = useState(false)
+  const [parsing, setParsing] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const extractText = async (file: File): Promise<string> => {
+    // Read as text for text-based PDFs and .txt files
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const raw = e.target?.result as string
+        // Strip PDF binary/non-printable characters, keep readable text
+        const cleaned = raw
+          .replace(/[^\x20-\x7E\n\r\t]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+        resolve(cleaned.length > 100 ? cleaned : raw)
+      }
+      reader.readAsText(file, 'utf-8')
+    })
+  }
+
+  const handleFile = async (file: File) => {
+    if (!file) return
+    const validTypes = ['application/pdf', 'text/plain', 'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    const validExt = /\.(pdf|txt|doc|docx)$/i.test(file.name)
+    if (!validTypes.includes(file.type) && !validExt) {
+      alert('Please upload a PDF, Word document, or text file.')
+      return
+    }
+    setParsing(true)
+    try {
+      const text = await extractText(file)
+      onResumeParsed(text, file.name)
+    } catch {
+      alert('Could not read the file. Try a .txt or copy-paste your resume text.')
+    } finally {
+      setParsing(false)
+    }
+  }
+
+  const hasFile = !!resumeFileName
+
+  return (
+    <div>
+      <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 5 }}>
+        Resume <span style={{ color: 'var(--text-tertiary)', fontWeight: 400 }}>(optional — unlocks personalized analysis)</span>
+      </label>
+      <div
+        className={`upload-zone ${isDragging ? 'drag-over' : ''} ${hasFile ? 'has-file' : ''}`}
+        onClick={() => fileInputRef.current?.click()}
+        onDragOver={e => { e.preventDefault(); setIsDragging(true) }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={e => {
+          e.preventDefault(); setIsDragging(false)
+          const file = e.dataTransfer.files[0]
+          if (file) handleFile(file)
+        }}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,.txt,.doc,.docx"
+          style={{ display: 'none' }}
+          onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
+        />
+        {parsing ? (
+          <>
+            <div style={{ width: 20, height: 20, border: '2px solid var(--brand-light)', borderTopColor: 'var(--brand)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 8px' }} />
+            <div className="upload-text">Reading your resume...</div>
+          </>
+        ) : hasFile ? (
+          <>
+            <span className="mat-icon" style={{ color: 'var(--accent)', fontSize: '28px', display: 'block', marginBottom: 6 }}>check_circle</span>
+            <div className="upload-success">{resumeFileName}</div>
+            <div className="upload-sub" style={{ color: 'var(--accent-dark)', marginTop: 4 }}>Resume loaded — your brief will be personalized</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', marginTop: 6 }}>Click to change</div>
+          </>
+        ) : (
+          <>
+            <span className="mat-icon" style={{ color: 'var(--brand)', fontSize: '28px', display: 'block', marginBottom: 6 }}>upload_file</span>
+            <div className="upload-text">Drop your resume here or click to browse</div>
+            <div className="upload-sub">PDF, Word, or .txt · Max 5MB · Your data stays private</div>
+          </>
+        )}
+      </div>
+    </div>
+  )
 }
 
 // ── Section renderer ─────────────────────────────────────────
@@ -403,13 +603,20 @@ function InputForm({
   onGenerate,
   loading,
 }: {
-  onGenerate: (jd: string, depth: string, audience: string) => void
+  onGenerate: (jd: string, depth: string, audience: string, resumeText: string) => void
   loading: boolean
 }) {
   const [jd, setJd] = useState('')
   const [depth, setDepth] = useState('standard')
   const [audience, setAudience] = useState('some')
   const [error, setError] = useState('')
+  const [resumeText, setResumeText] = useState('')
+  const [resumeFileName, setResumeFileName] = useState('')
+
+  const handleResumeParsed = (text: string, fileName: string) => {
+    setResumeText(text)
+    setResumeFileName(fileName)
+  }
 
   const handleSubmit = () => {
     if (jd.trim().length < 60) {
@@ -417,7 +624,7 @@ function InputForm({
       return
     }
     setError('')
-    onGenerate(jd, depth, audience)
+    onGenerate(jd, depth, audience, resumeText)
   }
 
   return (
@@ -429,19 +636,14 @@ function InputForm({
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {EXAMPLE_JDS.map(ex => (
-            <button
-              key={ex.label}
-              onClick={() => setJd(ex.jd)}
-              className="btn btn-secondary btn-sm"
-              style={{ fontSize: '0.78rem' }}
-            >
+            <button key={ex.label} onClick={() => setJd(ex.jd)} className="btn btn-secondary btn-sm" style={{ fontSize: '0.78rem' }}>
               {ex.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Textarea */}
+      {/* Job description textarea */}
       <div>
         <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
           Job description <span style={{ color: 'var(--brand)' }}>*</span>
@@ -450,7 +652,7 @@ function InputForm({
           className="input"
           value={jd}
           onChange={e => { setJd(e.target.value); if (error) setError('') }}
-          placeholder="Paste the full job description here — include the role title, company, responsibilities, required skills, and any tech stack mentions. The more detail, the more tailored your guide will be."
+          placeholder="Paste the full job description here — include the role title, company, responsibilities, required skills, and any tech stack mentions. The more detail, the more tailored your brief will be."
           rows={7}
           style={{ minHeight: 160 }}
         />
@@ -458,13 +660,24 @@ function InputForm({
           <span style={{ fontSize: '0.72rem', color: error ? 'var(--brand)' : 'var(--text-tertiary)' }}>
             {error || `${jd.length} characters`}
           </span>
-          {jd.length > 60 && (
-            <span style={{ fontSize: '0.72rem', color: 'var(--green)' }}>✓ Ready to generate</span>
-          )}
+          {jd.length > 60 && <span style={{ fontSize: '0.72rem', color: 'var(--green)' }}>✓ Ready to generate</span>}
         </div>
       </div>
 
-      {/* Options grid */}
+      {/* Resume upload */}
+      <ResumeUpload onResumeParsed={handleResumeParsed} resumeFileName={resumeFileName} />
+
+      {/* Resume loaded confirmation */}
+      {resumeText && (
+        <div style={{ background: 'var(--accent-light)', border: '1px solid rgba(20,143,119,0.3)', borderRadius: 'var(--r-md)', padding: '10px 14px', display: 'flex', gap: 10, alignItems: 'center' }}>
+          <span className="mat-icon mat-icon-sm" style={{ color: 'var(--accent)', flexShrink: 0 }}>psychology</span>
+          <div style={{ fontSize: '0.82rem', color: 'var(--accent-dark)', lineHeight: 1.5 }}>
+            <strong>Resume loaded.</strong> Your brief will include a personalized match score, strengths, skill gaps, and ready-to-use interview talking points.
+          </div>
+        </div>
+      )}
+
+      {/* Options */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }} className="options-grid">
         <div>
           <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 5 }}>Guide depth</label>
@@ -475,31 +688,30 @@ function InputForm({
           </select>
         </div>
         <div>
-          <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 5 }}>Audience level</label>
-          <select className="select" value={audience} onChange={e => setAudience(e.target.value)}>
+          <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 5 }}>
+            {resumeText ? 'Level (AI will auto-select from resume)' : 'Audience level'}
+          </label>
+          <select className="select" value={audience} onChange={e => setAudience(e.target.value)}
+            style={{ borderColor: resumeText ? 'var(--accent)' : undefined }}>
             <option value="beginner">Complete beginner</option>
             <option value="some">Some background knowledge</option>
             <option value="technical">Technical / experienced</option>
           </select>
+          {resumeText && <div style={{ fontSize: '0.7rem', color: 'var(--accent-dark)', marginTop: 3 }}>AI will set this based on your resume match score</div>}
         </div>
       </div>
 
       {/* Generate button */}
-      <button
-        className="btn btn-primary btn-lg"
-        onClick={handleSubmit}
-        disabled={loading}
-        style={{ width: '100%', fontSize: '1rem' }}
-      >
+      <button className="btn btn-primary btn-lg" onClick={handleSubmit} disabled={loading} style={{ width: '100%', fontSize: '1rem' }}>
         {loading ? (
           <>
             <div style={{ width: 18, height: 18, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-            Briefing you...
+            {resumeText ? 'Building your personalized brief...' : 'Briefing you...'}
           </>
         ) : (
           <>
-            <Icon.Sparkle size={18} />
-            Brief Me
+            <span className="mat-icon mat-icon-sm">auto_fix_high</span>
+            {resumeText ? 'Brief Me — Personalized' : 'Brief Me'}
           </>
         )}
       </button>
@@ -646,7 +858,7 @@ export default function App() {
   const guideRef = useRef<HTMLDivElement>(null)
   const msgIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  const generate = useCallback(async (jd: string, depth: string, audience: string) => {
+  const generate = useCallback(async (jd: string, depth: string, audience: string, resumeText: string = '') => {
     setGuide(null)
     setError('')
     setStatus('loading')
@@ -662,7 +874,7 @@ export default function App() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jobDescription: jd, depth, audience }),
+        body: JSON.stringify({ jobDescription: jd, depth, audience, resumeText }),
       })
 
       if (!res.ok) {
@@ -754,6 +966,15 @@ export default function App() {
           <div ref={guideRef} style={{ paddingTop: 24 }}>
             <GuideHeader guide={guide} onExport={handleExport} onReset={reset} />
 
+            {/* Your Edge — personalized section (only shows with resume) */}
+            {guide.resumeAnalysis?.hasResume && (
+              <YourEdge
+                analysis={guide.resumeAnalysis}
+                role={guide.role}
+                company={guide.company}
+              />
+            )}
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {guide.courses?.map((course, i) => (
                 <CourseCard key={i} course={course} index={i} defaultOpen={i === 0} />
@@ -768,7 +989,7 @@ export default function App() {
             {/* Generate another */}
             <div style={{ textAlign: 'center', marginTop: 32 }}>
               <button className="btn btn-primary" onClick={reset}>
-                <Icon.Sparkle size={16} />
+                <span className="mat-icon mat-icon-sm">add_circle</span>
                 Brief me on another role
               </button>
             </div>

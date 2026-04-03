@@ -29,12 +29,24 @@ export interface GlossaryEntry {
   definition: string
 }
 
+export interface ResumeAnalysis {
+  hasResume: boolean
+  matchScore: number
+  recommendedLevel: 'beginner' | 'some' | 'technical'
+  matchLabel: string
+  yourStrengths: string[]
+  skillGaps: string[]
+  talkingPoints: string[]
+  positioningSummary: string
+}
+
 export interface GuideData {
   company: string
   role: string
   industry: string
   overview: string
   keySkills: string[]
+  resumeAnalysis: ResumeAnalysis
   courses: GuideCourse[]
   competitorTable: {
     competitors: string[]

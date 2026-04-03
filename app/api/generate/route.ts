@@ -8,7 +8,7 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(req: NextRequest) {
   try {
-    const { jobDescription, depth = 'standard', audience = 'some' } = await req.json()
+    const { jobDescription, depth = 'standard', audience = 'some', resumeText = '' } = await req.json()
 
     if (!jobDescription || jobDescription.trim().length < 60) {
       return new Response(JSON.stringify({ error: 'Job description too short — please include more detail.' }), {
@@ -17,13 +17,19 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    const hasResume = resumeText && resumeText.trim().length > 100
+
+    // Build the user message — resume enriches the prompt significantly
+    const resumeSection = hasResume
+      ? `\n\nRESUME PROVIDED — perform full personalized analysis:\n"""\n${resumeText.trim().slice(0, 6000)}\n"""\n\nBased on this resume vs the job description: calculate matchScore (0-100), set recommendedLevel, identify yourStrengths (specific experiences that map to this JD), skillGaps (what JD requires that resume lacks), talkingPoints (first-person interview statements), and positioningSummary (elevator pitch).`
+      : '\n\nNO RESUME PROVIDED — set hasResume to false, matchScore to 0, empty arrays for resume fields.'
+
     const userMessage = `${DEPTH_INSTRUCTIONS[depth] || DEPTH_INSTRUCTIONS.standard}
-${AUDIENCE_INSTRUCTIONS[audience] || AUDIENCE_INSTRUCTIONS.some}
+${AUDIENCE_INSTRUCTIONS[audience] || AUDIENCE_INSTRUCTIONS.some}${resumeSection}
 
 Job description:
 ${jobDescription.trim()}`
 
-    // Use streaming for faster perceived response
     const stream = client.messages.stream({
       model: 'claude-opus-4-5',
       max_tokens: 8192,
