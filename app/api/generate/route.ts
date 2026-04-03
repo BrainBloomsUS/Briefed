@@ -32,7 +32,7 @@ ${jobDescription.trim()}`
 
     const stream = client.messages.stream({
       model: 'claude-opus-4-5',
-      max_tokens: 8192,
+      max_tokens: 16000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMessage }],
     })

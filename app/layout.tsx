@@ -4,20 +4,35 @@ import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
+const BASE_URL = 'https://getbriefed.ai'
+
 export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
   title: 'Briefed — Know Your Role Before Day One',
   description:
-    'Paste any job description and get a structured, course-style field guide covering products, tools, competitors, and career strategy — powered by Claude AI.',
-  keywords: ['briefed', 'job preparation', 'AI', 'sales enablement', 'onboarding', 'field guide'],
+    'Paste any job description, upload your resume, and get a personalized field guide with match score, interview talking points, competitor analysis, and career strategy — powered by Claude AI.',
+  keywords: ['briefed', 'job preparation', 'AI', 'resume analysis', 'sales enablement', 'interview prep', 'career', 'field guide'],
+  authors: [{ name: 'Brain Blooms LLC' }],
   openGraph: {
     title: 'Briefed — Know Your Role Before Day One',
-    description: 'Get fully briefed on any job — products, tools, competitors, and career strategy. Powered by Claude AI.',
+    description: 'Upload your resume + paste a job description. Get a personalized match score, interview talking points, and a full industry field guide in under 60 seconds.',
     type: 'website',
+    url: BASE_URL,
+    siteName: 'Briefed',
+    images: [
+      {
+        url: '/og',
+        width: 1200,
+        height: 630,
+        alt: 'Briefed — Know your role before day one',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Briefed',
-    description: 'Know your role before day one. AI-powered field guides for any job description.',
+    title: 'Briefed — Know Your Role Before Day One',
+    description: 'Upload your resume + paste a job description. Personalized match score, talking points, and industry field guide in 60 seconds.',
+    images: ['/og'],
   },
 }
 

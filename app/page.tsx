@@ -2,6 +2,7 @@
 import { useState, useRef, useCallback } from 'react'
 import type { GuideData, GuideCourse, GuideSection, GenerationStatus, ResumeAnalysis } from '@/lib/types'
 import { EXAMPLE_JDS } from '@/lib/constants'
+import { useCredits } from '@/lib/useCredits'
 
 // ── Icons (inline SVG components) ────────────────────────────
 const Icon = {
@@ -738,6 +739,88 @@ function InputForm({
   )
 }
 
+// ── Credits bar ───────────────────────────────────────────────
+function CreditsBar({ remaining, total }: { remaining: number; total: number }) {
+  const used = total - remaining
+  return (
+    <div className="credits-bar">
+      <div className="credits-dots">
+        {Array.from({ length: total }).map((_, i) => (
+          <div key={i} className={`credit-dot ${i < used ? 'used' : ''}`} />
+        ))}
+      </div>
+      <div className="credits-text">
+        <strong>{remaining} personalized brief{remaining !== 1 ? 's' : ''}</strong> remaining this month
+      </div>
+    </div>
+  )
+}
+
+// ── Upgrade wall ──────────────────────────────────────────────
+function UpgradeWall({ onSkip }: { onSkip: () => void }) {
+  const [email, setEmail] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+
+  const handleSubmit = () => {
+    if (!email.includes('@')) return
+    setSubmitted(true)
+    // In production: POST to your email list / Mailchimp / etc.
+    console.log('Waitlist signup:', email)
+  }
+
+  return (
+    <div className="upgrade-wall fade-up">
+      <div className="upgrade-icon">
+        <span className="mat-icon" style={{ color: '#52D9C1', fontSize: '28px' }}>workspace_premium</span>
+      </div>
+      <div className="upgrade-title">
+        {submitted ? "You're on the list!" : "You've used your 3 free personalized briefs"}
+      </div>
+      <div className="upgrade-desc">
+        {submitted
+          ? "We'll email you the moment paid credits launch. In the meantime, you can still generate standard briefs — just without the resume analysis."
+          : "Drop your email and we'll notify you when paid credits launch. Standard briefs (without resume analysis) are always free."}
+      </div>
+
+      {!submitted ? (
+        <>
+          <div className="upgrade-email-row">
+            <input
+              className="upgrade-email-input"
+              type="email"
+              placeholder="your@email.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+            />
+            <button className="upgrade-submit" onClick={handleSubmit}>
+              Notify me
+            </button>
+          </div>
+          <div className="upgrade-note">No spam. One email when credits launch.</div>
+        </>
+      ) : (
+        <div style={{ marginBottom: 20 }}>
+          <span className="mat-icon" style={{ color: '#52D9C1', fontSize: '40px', display: 'block', margin: '0 auto 8px' }}>check_circle</span>
+        </div>
+      )}
+
+      <div className="upgrade-or">
+        <div className="upgrade-or-line" />
+        <div className="upgrade-or-text">or</div>
+        <div className="upgrade-or-line" />
+      </div>
+
+      <button
+        onClick={onSkip}
+        style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.8)', borderRadius: 'var(--r-md)', padding: '10px 20px', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: 500 }}
+      >
+        Continue without resume analysis
+      </button>
+    </div>
+  )
+}
+
 // ── Nav ───────────────────────────────────────────────────────
 function Nav() {
   return (
@@ -874,10 +957,24 @@ export default function App() {
   const [status, setStatus] = useState<GenerationStatus>('idle')
   const [statusMsg, setStatusMsg] = useState('')
   const [error, setError] = useState('')
+  const [showUpgradeWall, setShowUpgradeWall] = useState(false)
+  const [pendingGenerate, setPendingGenerate] = useState<null | { jd: string; depth: string; audience: string }>(null)
   const guideRef = useRef<HTMLDivElement>(null)
   const msgIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const credits = useCredits()
 
   const generate = useCallback(async (jd: string, depth: string, audience: string, resumeText: string = '') => {
+    const isPersonalized = resumeText.trim().length > 100
+
+    // Check credits before running
+    if (isPersonalized && !credits.canUsePersonalized) {
+      setPendingGenerate({ jd, depth, audience })
+      setShowUpgradeWall(true)
+      return
+    }
+
+    setShowUpgradeWall(false)
+    setPendingGenerate(null)
     setGuide(null)
     setError('')
     setStatus('loading')
@@ -919,6 +1016,13 @@ export default function App() {
       setGuide(data)
       setStatus('done')
 
+      // Consume a personalized credit if resume was used
+      if (data.resumeAnalysis?.hasResume) {
+        credits.consume(true)
+      } else {
+        credits.consume(false)
+      }
+
       setTimeout(() => {
         guideRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }, 150)
@@ -928,7 +1032,7 @@ export default function App() {
     } finally {
       if (msgIntervalRef.current) clearInterval(msgIntervalRef.current)
     }
-  }, [])
+  }, [credits])
 
   const reset = () => {
     setGuide(null)
@@ -958,15 +1062,35 @@ export default function App() {
 
             <div className="card-elevated" style={{ padding: '28px', marginBottom: 16 }}>
               {status === 'idle' && (
-                <div style={{ marginBottom: 20 }}>
+                <div style={{ marginBottom: 16 }}>
                   <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 4 }}>Get briefed on any role</h2>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Paste a job description below — or try one of the examples to see Briefed in action.</p>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 12 }}>Paste a job description below — or try one of the examples to see Briefed in action.</p>
+                  {/* Credits bar — only show when mounted to avoid hydration mismatch */}
+                  {credits.mounted && (
+                    <CreditsBar
+                      remaining={credits.personalizedRemaining}
+                      total={credits.freePersonalized}
+                    />
+                  )}
                 </div>
               )}
-              {isLoading ? (
-                <LoadingState status={statusMsg} />
-              ) : (
-                <InputForm onGenerate={generate} loading={isLoading} />
+
+              {/* Upgrade wall */}
+              {showUpgradeWall && !isLoading && (
+                <UpgradeWall onSkip={() => {
+                  setShowUpgradeWall(false)
+                  if (pendingGenerate) {
+                    generate(pendingGenerate.jd, pendingGenerate.depth, pendingGenerate.audience, '')
+                  }
+                }} />
+              )}
+
+              {!showUpgradeWall && (
+                isLoading ? (
+                  <LoadingState status={statusMsg} />
+                ) : (
+                  <InputForm onGenerate={generate} loading={isLoading} />
+                )
               )}
             </div>
 
