@@ -829,13 +829,13 @@ function SocialProof() {
         <div style={{ display: 'flex', gap: 2 }}>
           {[1,2,3,4,5].map(i => <Icon.Star key={i} size={13} />)}
         </div>
-        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--brand-dark)' }}>Used by sales reps, solutions engineers, and job seekers</span>
+        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--brand-dark)' }}>Made for job seekers, continuous learners, and industry professionals</span>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }} className="steps-grid">
         {[
-          { q: '"Got fully briefed on DriveCentric before my interview. Landed the role."', name: 'Solutions Consultant, STL' },
-          { q: '"I send this to every new sales hire. Replaced 2 weeks of onboarding."', name: 'Sales Director, Chicago' },
-          { q: '"The competitor table alone was worth it. Walked in knowing exactly how to position."', name: 'Territory Manager, Austin' },
+          { q: '"I uploaded my resume and it told me exactly how my Salesforce experience translated. Walked into the interview knowing my talking points cold."', name: 'Account Executive' },
+          { q: '"Sent this to my entire new hire class on day one. They were asking smarter questions by day three. Nothing else does this."', name: 'Sales Director' },
+          { q: '"The competitor table alone changed how I positioned myself. I stopped guessing and started winning deals I should have been losing."', name: 'Territory Manager' },
         ].map((t, i) => (
           <div key={i} style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
             <span style={{ fontStyle: 'italic' }}>{t.q}</span>
