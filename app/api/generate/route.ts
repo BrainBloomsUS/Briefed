@@ -19,19 +19,22 @@ export async function POST(req: NextRequest) {
 
     const hasResume = resumeText && resumeText.trim().length > 100
 
-    // Build the user message — resume enriches the prompt significantly
+    // Cap inputs to prevent token overflow — Sonnet handles up to 5000 chars JD comfortably
+    const jdCapped = jobDescription.trim().slice(0, 5000)
+    const resumeCapped = hasResume ? resumeText.trim().slice(0, 4000) : ''
+
     const resumeSection = hasResume
-      ? `\n\nRESUME PROVIDED — perform full personalized analysis:\n"""\n${resumeText.trim().slice(0, 6000)}\n"""\n\nBased on this resume vs the job description: calculate matchScore (0-100), set recommendedLevel, identify yourStrengths (specific experiences that map to this JD), skillGaps (what JD requires that resume lacks), talkingPoints (first-person interview statements), and positioningSummary (elevator pitch).`
+      ? `\n\nRESUME PROVIDED — perform full personalized analysis:\n"""\n${resumeCapped}\n"""\n\nBased on this resume vs the job description: calculate matchScore (0-100), set recommendedLevel, identify yourStrengths (specific experiences that map to this JD), skillGaps (what JD requires that resume lacks), talkingPoints (first-person interview statements), and positioningSummary (elevator pitch).`
       : '\n\nNO RESUME PROVIDED — set hasResume to false, matchScore to 0, empty arrays for resume fields.'
 
     const userMessage = `${DEPTH_INSTRUCTIONS[depth] || DEPTH_INSTRUCTIONS.standard}
 ${AUDIENCE_INSTRUCTIONS[audience] || AUDIENCE_INSTRUCTIONS.some}${resumeSection}
 
 Job description:
-${jobDescription.trim()}`
+${jdCapped}`
 
     const stream = client.messages.stream({
-      model: 'claude-opus-4-5',
+      model: 'claude-sonnet-4-5',
       max_tokens: 16000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMessage }],

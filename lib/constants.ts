@@ -67,10 +67,12 @@ RESUME ANALYSIS RULES (only when resume text is provided):
 WITHOUT RESUME: set hasResume to false, matchScore to 0, recommendedLevel to the user-selected audience level, empty arrays for strengths/gaps/talkingPoints, empty positioningSummary.
 
 Quality requirements:
-- Each course: 4-6 sections, genuine depth, real product names and specs
-- competitorTable: 10-15 rows, specific product names in every cell
-- careerTips: 5-7 tips, role-specific and immediately actionable
-- glossary: 30-50 entries covering every acronym and jargon term used in the guide`
+- Each course: 3-4 sections max, genuine depth, real product names and specs
+- competitorTable: 8-10 rows, specific product names in every cell
+- careerTips: 4-5 tips, role-specific and immediately actionable
+- glossary: 20-30 entries covering the most important acronyms and jargon
+- Keep all prose concise — quality over quantity, every sentence must earn its place
+- CRITICAL: You must complete the entire JSON structure. Never cut off mid-response. If running long, shorten individual sections but always close all JSON brackets properly.`
 
 export const DEPTH_INSTRUCTIONS: Record<string, string> = {
   quick: 'Create exactly 4 courses: 101 foundations, 102 core products/services, 201 key tools and software, 301 competitors and strategy.',

@@ -273,7 +273,7 @@ function ResumeUpload({ onResumeParsed, resumeFileName }: {
             <span className="mat-icon" style={{ color: 'var(--brand)', fontSize: '28px', display: 'block', marginBottom: 6 }}>upload_file</span>
             <div className="upload-text">Drop your resume here or click to browse</div>
             <div className="upload-sub" style={{ marginTop: 5 }}>
-              PDF, Word, or .txt &nbsp;·&nbsp; Your resume stays private and is never stored
+              PDF, Word, or .txt &nbsp;·&nbsp; Up to 4,000 characters of resume content used &nbsp;·&nbsp; Your resume stays private and is never stored
             </div>
           </>
         )}
@@ -674,13 +674,34 @@ function InputForm({
           onChange={e => { setJd(e.target.value); if (error) setError('') }}
           placeholder="Paste the full job description here — include the role title, company, responsibilities, required skills, and any tech stack mentions. The more detail, the more tailored your brief will be."
           rows={7}
-          style={{ minHeight: 160 }}
+          style={{ minHeight: 160, borderColor: jd.length > 5000 ? '#E53E3E' : jd.length > 4000 ? '#D97706' : undefined }}
         />
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 5 }}>
           <span style={{ fontSize: '0.72rem', color: error ? 'var(--brand)' : 'var(--text-tertiary)' }}>
-            {error || `${jd.length} characters`}
+            {error}
           </span>
-          {jd.length > 60 && <span style={{ fontSize: '0.72rem', color: 'var(--green)' }}>✓ Ready to generate</span>}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {jd.length > 5000 && (
+              <button
+                onClick={() => setJd(jd.slice(0, 5000))}
+                style={{ fontSize: '0.72rem', color: 'white', background: '#E53E3E', border: 'none', borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: 600 }}
+              >
+                Auto-trim to limit
+              </button>
+            )}
+            <span style={{
+              fontSize: '0.72rem',
+              fontWeight: 600,
+              color: jd.length > 5000 ? '#E53E3E' : jd.length > 4000 ? '#D97706' : jd.length > 60 ? 'var(--green)' : 'var(--text-tertiary)'
+            }}>
+              {jd.length.toLocaleString()} / 5,000
+              {jd.length > 5000 ? ' — over limit, will be trimmed' : jd.length > 4000 ? ' — approaching limit' : jd.length > 60 ? ' ✓ ready' : ''}
+            </span>
+          </div>
+        </div>
+        {/* Resume limit hint */}
+        <div style={{ marginTop: 6, fontSize: '0.72rem', color: 'var(--text-tertiary)', lineHeight: 1.5 }}>
+          <span style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Tips for best results:</span> Include the job title, company name, key responsibilities, and required skills. Remove lengthy legal boilerplate (EEO statements, benefits descriptions) if over the limit — that content doesn't improve your brief.
         </div>
       </div>
 
