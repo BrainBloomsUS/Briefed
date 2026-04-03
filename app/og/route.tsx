@@ -5,7 +5,7 @@ export const alt = 'Briefed — Know your role before day one'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
-export default function OGImage() {
+export async function GET() {
   return new ImageResponse(
     (
       <div
@@ -21,7 +21,7 @@ export default function OGImage() {
           fontFamily: 'Georgia, serif',
         }}
       >
-        {/* Subtle grid pattern overlay */}
+        {/* Subtle dot grid overlay */}
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
           backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)',
@@ -31,7 +31,6 @@ export default function OGImage() {
 
         {/* Logo row */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
-          {/* B mark */}
           <div style={{
             width: '80px', height: '80px',
             background: 'white',
@@ -42,18 +41,15 @@ export default function OGImage() {
             fontSize: '52px',
             fontWeight: 900,
             color: '#1B4F72',
-            fontFamily: 'Georgia, serif',
             lineHeight: 1,
           }}>
             B
           </div>
-          {/* Wordmark */}
           <div style={{
             fontSize: '72px',
             fontWeight: 900,
             color: 'white',
             letterSpacing: '-0.04em',
-            fontFamily: 'Georgia, serif',
             lineHeight: 1,
           }}>
             Briefed
@@ -66,7 +62,6 @@ export default function OGImage() {
           color: 'rgba(255,255,255,0.80)',
           marginBottom: '40px',
           letterSpacing: '0.01em',
-          fontFamily: 'sans-serif',
           fontWeight: 400,
         }}>
           Know your role before day one
@@ -90,7 +85,6 @@ export default function OGImage() {
                 padding: '10px 22px',
                 fontSize: '18px',
                 color: 'rgba(255,255,255,0.90)',
-                fontFamily: 'sans-serif',
                 fontWeight: 500,
                 display: 'flex',
               }}
@@ -100,20 +94,19 @@ export default function OGImage() {
           ))}
         </div>
 
-        {/* URL bar */}
+        {/* URL */}
         <div style={{
           position: 'absolute',
           bottom: '40px',
           fontSize: '20px',
           color: 'rgba(255,255,255,0.40)',
-          fontFamily: 'sans-serif',
           letterSpacing: '0.05em',
           display: 'flex',
         }}>
           getbriefed.fyi
         </div>
 
-        {/* Teal accent bar at bottom */}
+        {/* Teal accent bar */}
         <div style={{
           position: 'absolute',
           bottom: 0, left: 0, right: 0,
@@ -122,20 +115,19 @@ export default function OGImage() {
           display: 'flex',
         }} />
 
-        {/* Brain Blooms LLC credit */}
+        {/* Brain Blooms LLC */}
         <div style={{
           position: 'absolute',
           bottom: '16px',
           right: '40px',
           fontSize: '16px',
           color: 'rgba(255,255,255,0.30)',
-          fontFamily: 'sans-serif',
           display: 'flex',
         }}>
           Brain Blooms LLC
         </div>
       </div>
     ),
-    { ...size }
+    { width: 1200, height: 630 }
   )
 }
