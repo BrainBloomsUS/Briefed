@@ -6,26 +6,64 @@ export const maxDuration = 120
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
+function repairJSON(raw: string): string {
+  let text = raw.replace(/```json|```/g, '').trim()
+  try { JSON.parse(text); return text } catch {}
+
+  let braces = 0, brackets = 0, inString = false, escape = false
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]
+    if (escape) { escape = false; continue }
+    if (ch === '\\' && inString) { escape = true; continue }
+    if (ch === '"') { inString = !inString; continue }
+    if (inString) continue
+    if (ch === '{') braces++
+    if (ch === '}') braces--
+    if (ch === '[') brackets++
+    if (ch === ']') brackets--
+  }
+
+  if (inString) {
+    const lastComma = text.lastIndexOf(',')
+    const lastClose = Math.max(text.lastIndexOf('}'), text.lastIndexOf(']'))
+    text = text.slice(0, Math.max(lastComma, lastClose) + 1)
+    braces = 0; brackets = 0; inString = false; escape = false
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i]
+      if (escape) { escape = false; continue }
+      if (ch === '\\' && inString) { escape = true; continue }
+      if (ch === '"') { inString = !inString; continue }
+      if (inString) continue
+      if (ch === '{') braces++
+      if (ch === '}') braces--
+      if (ch === '[') brackets++
+      if (ch === ']') brackets--
+    }
+  }
+
+  text = text.trimEnd().replace(/,\s*$/, '')
+  while (brackets > 0) { text += ']'; brackets-- }
+  while (braces > 0) { text += '}'; braces-- }
+  return text
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { jobDescription, depth = 'standard', audience = 'some', resumeText = '' } = await req.json()
 
     if (!jobDescription || jobDescription.trim().length < 60) {
-      return new Response(JSON.stringify({ error: 'Job description too short — please include more detail.' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
+      return new Response(JSON.stringify({ error: 'Job description too short.' }), {
+        status: 400, headers: { 'Content-Type': 'application/json' },
       })
     }
 
     const hasResume = resumeText && resumeText.trim().length > 100
-
-    // Cap inputs to prevent token overflow — Sonnet handles up to 5000 chars JD comfortably
-    const jdCapped = jobDescription.trim().slice(0, 5000)
-    const resumeCapped = hasResume ? resumeText.trim().slice(0, 4000) : ''
+    const jdCapped = jobDescription.trim().slice(0, 4000)
+    const resumeCapped = hasResume ? resumeText.trim().slice(0, 3000) : ''
 
     const resumeSection = hasResume
-      ? `\n\nRESUME PROVIDED — perform full personalized analysis:\n"""\n${resumeCapped}\n"""\n\nBased on this resume vs the job description: calculate matchScore (0-100), set recommendedLevel, identify yourStrengths (specific experiences that map to this JD), skillGaps (what JD requires that resume lacks), talkingPoints (first-person interview statements), and positioningSummary (elevator pitch).`
-      : '\n\nNO RESUME PROVIDED — set hasResume to false, matchScore to 0, empty arrays for resume fields.'
+      ? `\n\nRESUME PROVIDED:\n"""\n${resumeCapped}\n"""\nCalculate matchScore, recommendedLevel, yourStrengths, skillGaps, talkingPoints, positioningSummary.`
+      : '\n\nNO RESUME: set hasResume false, matchScore 0, empty arrays.'
 
     const userMessage = `${DEPTH_INSTRUCTIONS[depth] || DEPTH_INSTRUCTIONS.standard}
 ${AUDIENCE_INSTRUCTIONS[audience] || AUDIENCE_INSTRUCTIONS.some}${resumeSection}
@@ -33,39 +71,20 @@ ${AUDIENCE_INSTRUCTIONS[audience] || AUDIENCE_INSTRUCTIONS.some}${resumeSection}
 Job description:
 ${jdCapped}`
 
-    const stream = client.messages.stream({
+    const message = await client.messages.create({
       model: 'claude-sonnet-4-5',
       max_tokens: 16000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMessage }],
     })
 
-    const encoder = new TextEncoder()
+    const raw = message.content
+      .map((b: { type: string; text?: string }) => b.type === 'text' ? b.text || '' : '')
+      .join('')
+    const repaired = repairJSON(raw)
 
-    const readableStream = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of stream) {
-            if (
-              chunk.type === 'content_block_delta' &&
-              chunk.delta.type === 'text_delta'
-            ) {
-              controller.enqueue(encoder.encode(chunk.delta.text))
-            }
-          }
-          controller.close()
-        } catch (err) {
-          controller.error(err)
-        }
-      },
-    })
-
-    return new Response(readableStream, {
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'Transfer-Encoding': 'chunked',
-        'X-Content-Type-Options': 'nosniff',
-      },
+    return new Response(repaired, {
+      headers: { 'Content-Type': 'application/json' },
     })
   } catch (err) {
     console.error('Generate error:', err)
