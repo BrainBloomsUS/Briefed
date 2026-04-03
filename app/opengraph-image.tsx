@@ -1,0 +1,105 @@
+import { ImageResponse } from 'next/og'
+
+export const runtime = 'edge'
+export const alt = 'Briefed — Know your role before day one'
+export const size = { width: 1200, height: 630 }
+export const contentType = 'image/png'
+
+export default function Image() {
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: '1200px',
+          height: '630px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, #0D1B2A 0%, #1B4F72 35%, #2471A3 65%, #148F77 100%)',
+          position: 'relative',
+        }}
+      >
+        {/* Logo row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
+          <div style={{
+            width: '80px', height: '80px',
+            background: 'white',
+            borderRadius: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '52px',
+            fontWeight: 900,
+            color: '#1B4F72',
+            lineHeight: 1,
+          }}>
+            B
+          </div>
+          <div style={{
+            fontSize: '72px',
+            fontWeight: 900,
+            color: 'white',
+            letterSpacing: '-0.04em',
+            lineHeight: 1,
+          }}>
+            Briefed
+          </div>
+        </div>
+
+        {/* Tagline */}
+        <div style={{
+          fontSize: '32px',
+          color: 'rgba(255,255,255,0.80)',
+          marginBottom: '40px',
+          fontWeight: 400,
+        }}>
+          Know your role before day one
+        </div>
+
+        {/* Feature pills */}
+        <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '900px' }}>
+          {['Resume match analysis', 'Interview talking points', 'Competitor intelligence', 'Career strategy'].map((pill) => (
+            <div key={pill} style={{
+              background: 'rgba(255,255,255,0.12)',
+              border: '1.5px solid rgba(255,255,255,0.22)',
+              borderRadius: '40px',
+              padding: '10px 22px',
+              fontSize: '18px',
+              color: 'rgba(255,255,255,0.90)',
+              fontWeight: 500,
+              display: 'flex',
+            }}>
+              {pill}
+            </div>
+          ))}
+        </div>
+
+        {/* URL */}
+        <div style={{
+          position: 'absolute', bottom: '40px',
+          fontSize: '20px', color: 'rgba(255,255,255,0.35)',
+          letterSpacing: '0.05em', display: 'flex',
+        }}>
+          getbriefed.fyi
+        </div>
+
+        {/* Teal accent bar */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '6px',
+          background: 'linear-gradient(90deg, #148F77, #52D9C1, #148F77)',
+          display: 'flex',
+        }} />
+
+        {/* Brain Blooms LLC */}
+        <div style={{
+          position: 'absolute', bottom: '16px', right: '40px',
+          fontSize: '16px', color: 'rgba(255,255,255,0.25)', display: 'flex',
+        }}>
+          Brain Blooms LLC
+        </div>
+      </div>
+    ),
+    { width: 1200, height: 630 }
+  )
+}

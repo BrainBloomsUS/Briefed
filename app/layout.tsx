@@ -19,20 +19,11 @@ export const metadata: Metadata = {
     type: 'website',
     url: BASE_URL,
     siteName: 'Briefed',
-    images: [
-      {
-        url: '/og',
-        width: 1200,
-        height: 630,
-        alt: 'Briefed — Know your role before day one',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Briefed — Know Your Role Before Day One',
     description: 'Upload your resume + paste a job description. Personalized match score, talking points, and industry field guide in 60 seconds.',
-    images: ['/og'],
   },
 }
 
