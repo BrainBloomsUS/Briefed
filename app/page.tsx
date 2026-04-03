@@ -217,9 +217,26 @@ function ResumeUpload({ onResumeParsed, resumeFileName }: {
 
   return (
     <div>
-      <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 5 }}>
-        Resume <span style={{ color: 'var(--text-tertiary)', fontWeight: 400 }}>(optional — unlocks personalized analysis)</span>
+      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
+        Resume <span style={{ background: 'var(--accent)', color: 'white', fontSize: '0.62rem', fontWeight: 700, padding: '2px 7px', borderRadius: 4, marginLeft: 6, letterSpacing: '0.04em', verticalAlign: 'middle' }}>UNLOCK PERSONALIZATION</span>
       </label>
+
+      {/* Value prop strip */}
+      {!resumeFileName && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 10 }}>
+          {[
+            { icon: 'track_changes', text: 'See how your skills map to the role' },
+            { icon: 'record_voice_over', text: 'Get interview talking points written for you' },
+            { icon: 'insights', text: 'Know exactly where to focus your prep' },
+          ].map(item => (
+            <div key={item.text} style={{ background: 'var(--brand-faint)', border: '1px solid var(--brand-light)', borderRadius: 'var(--r-sm)', padding: '8px 10px', display: 'flex', gap: 7, alignItems: 'flex-start' }}>
+              <span className="mat-icon" style={{ fontSize: '16px', color: 'var(--brand-mid)', flexShrink: 0, marginTop: 1 }}>{item.icon}</span>
+              <span style={{ fontSize: '0.73rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{item.text}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div
         className={`upload-zone ${isDragging ? 'drag-over' : ''} ${hasFile ? 'has-file' : ''}`}
         onClick={() => fileInputRef.current?.click()}
@@ -247,14 +264,16 @@ function ResumeUpload({ onResumeParsed, resumeFileName }: {
           <>
             <span className="mat-icon" style={{ color: 'var(--accent)', fontSize: '28px', display: 'block', marginBottom: 6 }}>check_circle</span>
             <div className="upload-success">{resumeFileName}</div>
-            <div className="upload-sub" style={{ color: 'var(--accent-dark)', marginTop: 4 }}>Resume loaded — your brief will be personalized</div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', marginTop: 6 }}>Click to change</div>
+            <div className="upload-sub" style={{ color: 'var(--accent-dark)', marginTop: 4 }}>Resume loaded — your brief will be fully personalized</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', marginTop: 6 }}>Click to swap file</div>
           </>
         ) : (
           <>
             <span className="mat-icon" style={{ color: 'var(--brand)', fontSize: '28px', display: 'block', marginBottom: 6 }}>upload_file</span>
             <div className="upload-text">Drop your resume here or click to browse</div>
-            <div className="upload-sub">PDF, Word, or .txt · Max 5MB · Your data stays private</div>
+            <div className="upload-sub" style={{ marginTop: 5 }}>
+              PDF, Word, or .txt &nbsp;·&nbsp; Your resume stays private and is never stored
+            </div>
           </>
         )}
       </div>

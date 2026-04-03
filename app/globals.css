@@ -731,3 +731,8 @@ textarea.input { padding: 12px 14px; resize: vertical; }
 .upload-text { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); }
 .upload-sub { font-size: 0.75rem; color: var(--text-tertiary); margin-top: 3px; }
 .upload-success { font-size: 0.82rem; color: var(--accent-dark); font-weight: 600; }
+
+/* ── Resume value props grid ──────────────────────────────── */
+@media (max-width: 600px) {
+  .resume-value-grid { grid-template-columns: 1fr !important; }
+}
