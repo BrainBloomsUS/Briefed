@@ -2,7 +2,8 @@ import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest } from 'next/server'
 import { SYSTEM_PROMPT, DEPTH_INSTRUCTIONS, AUDIENCE_INSTRUCTIONS } from '@/lib/constants'
 
-export const maxDuration = 120
+export const maxDuration = 60
+export const dynamic = 'force-dynamic'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
@@ -71,20 +72,38 @@ ${AUDIENCE_INSTRUCTIONS[audience] || AUDIENCE_INSTRUCTIONS.some}${resumeSection}
 Job description:
 ${jdCapped}`
 
-    const message = await client.messages.create({
+    // Use streaming to keep connection alive — avoids serverless timeout
+    const stream = await client.messages.stream({
       model: 'claude-sonnet-4-5',
-      max_tokens: 16000,
+      max_tokens: 12000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMessage }],
     })
 
-    const raw = message.content
-      .map((b: { type: string; text?: string }) => b.type === 'text' ? b.text || '' : '')
-      .join('')
-    const repaired = repairJSON(raw)
+    const encoder = new TextEncoder()
+    const readable = new ReadableStream({
+      async start(controller) {
+        let full = ''
+        try {
+          for await (const chunk of stream) {
+            if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
+              full += chunk.delta.text
+              // Stream raw text to keep connection alive
+              controller.enqueue(encoder.encode(chunk.delta.text))
+            }
+          }
+          controller.close()
+        } catch (err) {
+          controller.error(err)
+        }
+      }
+    })
 
-    return new Response(repaired, {
-      headers: { 'Content-Type': 'application/json' },
+    return new Response(readable, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'X-Content-Type-Options': 'nosniff',
+      },
     })
   } catch (err) {
     console.error('Generate error:', err)
