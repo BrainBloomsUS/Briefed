@@ -67,17 +67,16 @@ RESUME ANALYSIS RULES (only when resume text is provided):
 WITHOUT RESUME: set hasResume to false, matchScore to 0, recommendedLevel to the user-selected audience level, empty arrays for strengths/gaps/talkingPoints, empty positioningSummary.
 
 Quality requirements:
-- Each course: 3-4 sections max, genuine depth, real product names and specs
-- competitorTable: 8-10 rows, specific product names in every cell
-- careerTips: 4-5 tips, role-specific and immediately actionable
-- glossary: 20-30 entries covering the most important acronyms and jargon
-- Keep all prose concise — quality over quantity, every sentence must earn its place
-- CRITICAL: You must complete the entire JSON structure. Never cut off mid-response. If running long, shorten individual sections but always close all JSON brackets properly.`
+- Each course: 2-3 sections, concise but genuinely useful, real product names
+- competitorTable: 6-8 rows max, specific product names in every cell
+- careerTips: 4-5 tips, role-specific and actionable
+- glossary: 15-20 entries, the most important terms only
+- CRITICAL: Complete the ENTIRE JSON structure. Never truncate. Prioritize finishing over depth.`
 
 export const DEPTH_INSTRUCTIONS: Record<string, string> = {
-  quick: 'Create exactly 4 courses: 101 foundations, 102 core products/services, 201 key tools and software, 301 competitors and strategy.',
-  standard: 'Create 6-8 courses covering: industry foundations, major product categories, software and tools, services and support, competitor landscape, and career strategy.',
-  deep: 'Create 10-12 courses going deep on every product family, each major software tool, services, technical architecture, sales methodology, competitor analysis with product-by-product tables, and detailed career strategy.',
+  quick: 'Create exactly 3 courses: 101 foundations, 102 core products/tools, 201 competitors and strategy. Each course: 2-3 sections max.',
+  standard: 'Create exactly 5 courses covering: industry foundations, major products, key software/tools, competitor landscape, and career strategy. Each course: 2-3 sections max.',
+  deep: 'Create exactly 7 courses going deep on products, tools, technical architecture, sales methodology, competitors, and career strategy. Each course: 3-4 sections max.',
 }
 
 export const AUDIENCE_INSTRUCTIONS: Record<string, string> = {

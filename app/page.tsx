@@ -1032,7 +1032,48 @@ export default function App() {
         }
       }
 
-      const clean = full.replace(/```json|```/g, '').trim()
+      // Strip markdown fences and repair truncated JSON
+      let clean = full.replace(/```json|```/g, '').trim()
+
+      // Repair truncated JSON if needed
+      const repairJSON = (text: string): string => {
+        try { JSON.parse(text); return text } catch {}
+        let braces = 0, brackets = 0, inString = false, escape = false
+        for (let i = 0; i < text.length; i++) {
+          const ch = text[i]
+          if (escape) { escape = false; continue }
+          if (ch === '\\' && inString) { escape = true; continue }
+          if (ch === '"') { inString = !inString; continue }
+          if (inString) continue
+          if (ch === '{') braces++
+          if (ch === '}') braces--
+          if (ch === '[') brackets++
+          if (ch === ']') brackets--
+        }
+        if (inString) {
+          const lastComma = text.lastIndexOf(',')
+          const lastClose = Math.max(text.lastIndexOf('}'), text.lastIndexOf(']'))
+          text = text.slice(0, Math.max(lastComma, lastClose) + 1)
+          braces = 0; brackets = 0; inString = false; escape = false
+          for (let i = 0; i < text.length; i++) {
+            const ch = text[i]
+            if (escape) { escape = false; continue }
+            if (ch === '\\' && inString) { escape = true; continue }
+            if (ch === '"') { inString = !inString; continue }
+            if (inString) continue
+            if (ch === '{') braces++
+            if (ch === '}') braces--
+            if (ch === '[') brackets++
+            if (ch === ']') brackets--
+          }
+        }
+        text = text.trimEnd().replace(/,\s*$/, '')
+        while (brackets > 0) { text += ']'; brackets-- }
+        while (braces > 0) { text += '}'; braces-- }
+        return text
+      }
+
+      clean = repairJSON(clean)
       const data: GuideData = JSON.parse(clean)
       setGuide(data)
       setStatus('done')
