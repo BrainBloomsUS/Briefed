@@ -1,9 +1,9 @@
 export const SYSTEM_PROMPT = `You are an expert career coach and industry analyst. Create a concise field guide for someone preparing for a job role.
 
 CRITICAL RULES:
-1. Respond with ONLY raw JSON — NO markdown fences, NO backticks, NO preamble
-2. Keep ALL text fields SHORT — max 2 sentences per prose section
-3. Complete the ENTIRE JSON — finishing is more important than depth
+1. Respond with ONLY raw JSON - NO markdown fences, NO backticks, NO preamble
+2. Keep ALL text fields SHORT - max 2 sentences per prose section
+3. Complete the ENTIRE JSON - finishing is more important than depth
 4. If you are running long, cut content from later sections to ensure the JSON closes properly
 
 JSON structure (follow exactly):
@@ -64,7 +64,7 @@ export const DEPTH_INSTRUCTIONS: Record<string, string> = {
 }
 
 export const AUDIENCE_INSTRUCTIONS: Record<string, string> = {
-  beginner: 'The reader is a complete beginner — define every acronym on first use, use everyday analogies (e.g. "think of it like..."), never assume prior industry knowledge.',
+  beginner: 'The reader is a complete beginner - define every acronym on first use, use everyday analogies (e.g. "think of it like..."), never assume prior industry knowledge.',
   some: 'The reader has general business and tech familiarity but no deep industry knowledge. Define acronyms on first use, explain specialized concepts clearly, skip explaining basics like "what is email."',
   technical: 'The reader is technically experienced. Focus on architecture decisions, spec-level detail, nuanced tradeoffs, and expert-level insights. Skip basic definitions.',
 }
@@ -75,7 +75,7 @@ export const EXAMPLE_JDS = [
     emoji: '🚗',
     company: 'DriveCentric',
     role: 'Solutions Consultant',
-    jd: `Solutions Consultant at DriveCentric — the leading AI-powered CRM platform for automotive dealerships. You will serve as the technical layer between our sales team and dealership clients (General Managers, Dealer Principals, BDC Managers). Lead deep discovery meetings, deliver custom-tailored demos of our CRM, AI engagement tools, and service scheduling platform. Answer technical questions about API integrations, DMS connectivity, and agentic AI capabilities. 5+ years in a technical customer-facing role required. Domain knowledge of dealer systems in Digital Retail, CDP, Chat, F&I, Service scheduling, Agentic AI, and reporting. Familiarity with automotive CRM competitors (VinSolutions, Elead, DealerSocket) strongly preferred.`,
+    jd: `Solutions Consultant at DriveCentric - the leading AI-powered CRM platform for automotive dealerships. You will serve as the technical layer between our sales team and dealership clients (General Managers, Dealer Principals, BDC Managers). Lead deep discovery meetings, deliver custom-tailored demos of our CRM, AI engagement tools, and service scheduling platform. Answer technical questions about API integrations, DMS connectivity, and agentic AI capabilities. 5+ years in a technical customer-facing role required. Domain knowledge of dealer systems in Digital Retail, CDP, Chat, F&I, Service scheduling, Agentic AI, and reporting. Familiarity with automotive CRM competitors (VinSolutions, Elead, DealerSocket) strongly preferred.`,
   },
   {
     label: 'Supermicro Sales',
@@ -109,7 +109,7 @@ export const EXAMPLE_JDS = [
     label: 'Salesforce AE',
     emoji: '💼',
     company: 'Salesforce',
-    role: 'Account Executive — Commercial',
+    role: 'Account Executive - Commercial',
     jd: `Account Executive at Salesforce targeting commercial accounts (100-1000 employees) in the central US region. Full-cycle sales of Salesforce CRM (Sales Cloud, Service Cloud), Einstein AI, Marketing Cloud, and Data Cloud. Manage a book of 80-120 accounts. Quota of $2M ARR. Partner with Solution Engineers on technical demos and RFPs. Must understand Salesforce's competitive landscape vs HubSpot, Microsoft Dynamics, and Zoho. 3+ years B2B SaaS sales experience, Salesforce product knowledge preferred.`,
   },
 ]
