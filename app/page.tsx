@@ -599,7 +599,7 @@ const STATUS_MESSAGES = [
 function LoadingState({ status }: { status: string }) {
   return (
     <div className="loading-card fade-in" style={{ padding: '48px 32px' }}>
-      <div style={{ width: 48, height: 48, border: '3px solid var(--border)', borderTopColor: 'var(--brand)', borderRadius: '50%', margin: '0 auto 20px', animation: 'spin 0.8s linear infinite' }} />
+      <div className="rainbow-spinner" style={{ width: 52, height: 52, margin: '0 auto 20px' }} />
       <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: 8, color: 'var(--text-primary)' }}>
         Building your brief...
       </div>

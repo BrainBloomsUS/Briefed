@@ -90,6 +90,29 @@ h1, h2, h3, h4, h5 { font-weight: 700; line-height: 1.2; color: var(--text-prima
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+@keyframes rainbow-spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.rainbow-spinner {
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    #ff0000,
+    #ff7700,
+    #ffff00,
+    #00cc00,
+    #0099ff,
+    #6600ff,
+    #cc00cc,
+    #ff0000
+  );
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #fff calc(100% - 4px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #fff calc(100% - 4px));
+  animation: rainbow-spin 1s linear infinite;
+}
 @keyframes pulse {
   0%,100% { opacity: 1; }
   50% { opacity: 0.4; }
