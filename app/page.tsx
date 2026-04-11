@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import type { GuideData, GuideCourse, GuideSection, GenerationStatus, ResumeAnalysis } from '@/lib/types'
 import { EXAMPLE_JDS } from '@/lib/constants'
 import { useCredits } from '@/lib/useCredits'
