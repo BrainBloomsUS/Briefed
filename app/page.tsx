@@ -597,9 +597,39 @@ const STATUS_MESSAGES = [
 ]
 
 function LoadingState({ status }: { status: string }) {
+  const [elapsed, setElapsed] = useState(0)
+  const spinnerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const start = Date.now()
+    const interval = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - start) / 1000))
+    }, 500)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Speed ramps from 1.4s per rotation down to 0.4s as time passes (max 60s)
+  const progress = Math.min(elapsed / 60, 1)
+  const duration = 1.4 - progress * 1.0  // 1.4s → 0.4s
+
+  useEffect(() => {
+    if (spinnerRef.current) {
+      spinnerRef.current.style.animationDuration = `${duration.toFixed(2)}s`
+    }
+  }, [duration])
+
   return (
     <div className="loading-card fade-in" style={{ padding: '48px 32px' }}>
-      <div className="rainbow-spinner" style={{ width: 52, height: 52, margin: '0 auto 20px' }} />
+      <div
+        ref={spinnerRef}
+        className="rainbow-spinner"
+        style={{
+          width: 56,
+          height: 56,
+          margin: '0 auto 20px',
+          animation: `rainbow-rotate ${duration.toFixed(2)}s linear infinite`,
+        }}
+      />
       <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: 8, color: 'var(--text-primary)' }}>
         Building your brief...
       </div>
@@ -760,84 +790,85 @@ function InputForm({
   )
 }
 
-// ── Credits bar ───────────────────────────────────────────────
-function CreditsBar({ remaining, total }: { remaining: number; total: number }) {
-  const used = total - remaining
+// ── Milestone Modal — shown after 3 personalized briefs ───────
+function MilestoneModal({ count, onContinue }: { count: number; onContinue: () => void }) {
   return (
-    <div className="credits-bar">
-      <div className="credits-dots">
-        {Array.from({ length: total }).map((_, i) => (
-          <div key={i} className={`credit-dot ${i < used ? 'used' : ''}`} />
-        ))}
-      </div>
-      <div className="credits-text">
-        <strong>{remaining} personalized brief{remaining !== 1 ? 's' : ''}</strong> remaining this month
-      </div>
-    </div>
-  )
-}
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 1000,
+      background: 'rgba(13,27,42,0.75)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '24px',
+      backdropFilter: 'blur(4px)',
+    }}>
+      <div style={{
+        background: 'white', borderRadius: 'var(--r-xl)',
+        padding: '40px 36px', maxWidth: 480, width: '100%',
+        textAlign: 'center', boxShadow: 'var(--shadow-xl)',
+        animation: 'fade-up 0.3s ease',
+      }}>
+        {/* Emoji celebration */}
+        <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🎉</div>
 
-// ── Upgrade wall ──────────────────────────────────────────────
-function UpgradeWall({ onSkip }: { onSkip: () => void }) {
-  const [email, setEmail] = useState('')
-  const [submitted, setSubmitted] = useState(false)
-
-  const handleSubmit = () => {
-    if (!email.includes('@')) return
-    setSubmitted(true)
-    // In production: POST to your email list / Mailchimp / etc.
-    console.log('Waitlist signup:', email)
-  }
-
-  return (
-    <div className="upgrade-wall fade-up">
-      <div className="upgrade-icon">
-        <span className="mat-icon" style={{ color: '#52D9C1', fontSize: '28px' }}>workspace_premium</span>
-      </div>
-      <div className="upgrade-title">
-        {submitted ? "You're on the list!" : "You've used your 3 free personalized briefs"}
-      </div>
-      <div className="upgrade-desc">
-        {submitted
-          ? "We'll email you the moment paid credits launch. In the meantime, you can still generate standard briefs — just without the resume analysis."
-          : "Drop your email and we'll notify you when paid credits launch. Standard briefs (without resume analysis) are always free."}
-      </div>
-
-      {!submitted ? (
-        <>
-          <div className="upgrade-email-row">
-            <input
-              className="upgrade-email-input"
-              type="email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-            />
-            <button className="upgrade-submit" onClick={handleSubmit}>
-              Notify me
-            </button>
-          </div>
-          <div className="upgrade-note">No spam. One email when credits launch.</div>
-        </>
-      ) : (
-        <div style={{ marginBottom: 20 }}>
-          <span className="mat-icon" style={{ color: '#52D9C1', fontSize: '40px', display: 'block', margin: '0 auto 8px' }}>check_circle</span>
+        <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--brand)', marginBottom: 8, letterSpacing: '-0.03em' }}>
+          You're on a roll!
         </div>
-      )}
 
-      <div className="upgrade-or">
-        <div className="upgrade-or-line" />
-        <div className="upgrade-or-text">or</div>
-        <div className="upgrade-or-line" />
+        <div style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
+          You've created <strong style={{ color: 'var(--text-primary)' }}>{count} personalized briefs</strong> — that's seriously impressive commitment to your prep.
+        </div>
+
+        <div style={{
+          background: 'var(--brand-faint)', border: '1px solid var(--brand-light)',
+          borderRadius: 'var(--r-lg)', padding: '16px 20px', marginBottom: 24, textAlign: 'left',
+        }}>
+          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--brand-mid)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+            About Briefed
+          </div>
+          {[
+            'Built by Brain Blooms LLC for continuous learners and career changers',
+            'Briefed is and always will be free — finding a new role is hard enough',
+            'Your resume and job descriptions are never stored or shared',
+            'Powered by Claude AI — the same AI that helped build this tool',
+          ].map((item, i) => (
+            <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 7, fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              <span style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 1 }}>✓</span>
+              <span>{item}</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ fontSize: '0.82rem', color: 'var(--text-tertiary)', marginBottom: 20 }}>
+          Feeling prepped? Share Briefed with someone else who could use it.
+        </div>
+
+        {/* Share row */}
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 20 }}>
+          <a
+            href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fgetbriefed.fyi"
+            target="_blank" rel="noreferrer"
+            style={{
+              background: '#0A66C2', color: 'white', borderRadius: 'var(--r-md)',
+              padding: '8px 16px', fontSize: '0.8rem', fontWeight: 700,
+              textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6,
+            }}
+          >
+            Share on LinkedIn
+          </a>
+        </div>
+
+        <button
+          onClick={onContinue}
+          className="btn btn-primary"
+          style={{ width: '100%', fontSize: '0.95rem', padding: '12px' }}
+        >
+          <span className="mat-icon mat-icon-sm">auto_fix_high</span>
+          Keep going — Brief me again
+        </button>
+
+        <div style={{ marginTop: 10, fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>
+          Briefed is always free. No limits, no credit card, ever.
+        </div>
       </div>
-
-      <button
-        onClick={onSkip}
-        style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.8)', borderRadius: 'var(--r-md)', padding: '10px 20px', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'var(--font)', fontWeight: 500 }}
-      >
-        Continue without resume analysis
-      </button>
     </div>
   )
 }
@@ -978,8 +1009,8 @@ export default function App() {
   const [status, setStatus] = useState<GenerationStatus>('idle')
   const [statusMsg, setStatusMsg] = useState('')
   const [error, setError] = useState('')
-  const [showUpgradeWall, setShowUpgradeWall] = useState(false)
-  const [pendingGenerate, setPendingGenerate] = useState<null | { jd: string; depth: string; audience: string }>(null)
+  const [showMilestone, setShowMilestone] = useState(false)
+  const [pendingGenerate, setPendingGenerate] = useState<null | { jd: string; depth: string; audience: string; resumeText: string }>(null)
   const guideRef = useRef<HTMLDivElement>(null)
   const msgIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const credits = useCredits()
@@ -987,14 +1018,14 @@ export default function App() {
   const generate = useCallback(async (jd: string, depth: string, audience: string, resumeText: string = '') => {
     const isPersonalized = resumeText.trim().length > 100
 
-    // Check credits before running
-    if (isPersonalized && !credits.canUsePersonalized) {
-      setPendingGenerate({ jd, depth, audience })
-      setShowUpgradeWall(true)
+    // After 3 personalized briefs show the milestone — but don't block
+    if (isPersonalized && credits.personalizedUsed > 0 && credits.personalizedUsed % 3 === 0 && !showMilestone) {
+      setPendingGenerate({ jd, depth, audience, resumeText })
+      setShowMilestone(true)
       return
     }
 
-    setShowUpgradeWall(false)
+    setShowMilestone(false)
     setPendingGenerate(null)
     setGuide(null)
     setError('')
@@ -1127,27 +1158,23 @@ export default function App() {
                 <div style={{ marginBottom: 16 }}>
                   <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 4 }}>Get briefed on any role</h2>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 12 }}>Paste a job description below — or try one of the examples to see Briefed in action.</p>
-                  {/* Credits bar — only show when mounted to avoid hydration mismatch */}
-                  {credits.mounted && (
-                    <CreditsBar
-                      remaining={credits.personalizedRemaining}
-                      total={credits.freePersonalized}
-                    />
-                  )}
                 </div>
               )}
 
-              {/* Upgrade wall */}
-              {showUpgradeWall && !isLoading && (
-                <UpgradeWall onSkip={() => {
-                  setShowUpgradeWall(false)
-                  if (pendingGenerate) {
-                    generate(pendingGenerate.jd, pendingGenerate.depth, pendingGenerate.audience, '')
-                  }
-                }} />
+              {/* Milestone modal — celebratory, not a wall */}
+              {showMilestone && (
+                <MilestoneModal
+                  count={credits.personalizedUsed}
+                  onContinue={() => {
+                    setShowMilestone(false)
+                    if (pendingGenerate) {
+                      generate(pendingGenerate.jd, pendingGenerate.depth, pendingGenerate.audience, pendingGenerate.resumeText)
+                    }
+                  }}
+                />
               )}
 
-              {!showUpgradeWall && (
+              {!showMilestone && (
                 isLoading ? (
                   <LoadingState status={statusMsg} />
                 ) : (
