@@ -598,7 +598,6 @@ const STATUS_MESSAGES = [
 
 function LoadingState({ status }: { status: string }) {
   const [elapsed, setElapsed] = useState(0)
-  const spinnerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const start = Date.now()
@@ -608,28 +607,46 @@ function LoadingState({ status }: { status: string }) {
     return () => clearInterval(interval)
   }, [])
 
-  // Speed ramps from 1.4s per rotation down to 0.4s as time passes (max 60s)
+  // Speed ramps: starts slow (1.4s) ramps to fast (0.4s) over 60 seconds
   const progress = Math.min(elapsed / 60, 1)
-  const duration = 1.4 - progress * 1.0  // 1.4s → 0.4s
+  const duration = (1.4 - progress * 1.0).toFixed(2)
 
-  useEffect(() => {
-    if (spinnerRef.current) {
-      spinnerRef.current.style.animationDuration = `${duration.toFixed(2)}s`
-    }
-  }, [duration])
+  const dots = [
+    { color: '#FF3B3B', angle: 0 },
+    { color: '#FF8C00', angle: 40 },
+    { color: '#FFD700', angle: 80 },
+    { color: '#00C853', angle: 120 },
+    { color: '#00BFFF', angle: 160 },
+    { color: '#7B2FFF', angle: 200 },
+    { color: '#FF69B4', angle: 240 },
+    { color: '#FF3B3B', angle: 300 },
+  ]
 
   return (
     <div className="loading-card fade-in" style={{ padding: '48px 32px' }}>
+      {/* Orbiting dots spinner */}
       <div
-        ref={spinnerRef}
         className="rainbow-spinner"
-        style={{
-          width: 56,
-          height: 56,
-          margin: '0 auto 20px',
-          animation: `rainbow-rotate ${duration.toFixed(2)}s linear infinite`,
-        }}
-      />
+        style={{ width: 56, height: 56, margin: '0 auto 20px', position: 'relative' }}
+      >
+        {dots.map((dot, i) => (
+          <div
+            key={i}
+            className="dot"
+            style={{
+              '--start': `${dot.angle}deg`,
+              '--duration': `${duration}s`,
+              '--delay': `0s`,
+              background: dot.color,
+              transform: `rotate(${dot.angle}deg) translateX(22px) rotate(-${dot.angle}deg)`,
+              width: i % 2 === 0 ? '8px' : '6px',
+              height: i % 2 === 0 ? '8px' : '6px',
+              boxShadow: `0 0 6px ${dot.color}88`,
+            } as React.CSSProperties}
+          />
+        ))}
+      </div>
+
       <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: 8, color: 'var(--text-primary)' }}>
         Building your brief...
       </div>
@@ -642,7 +659,7 @@ function LoadingState({ status }: { status: string }) {
         </div>
       </div>
       <div style={{ marginTop: 20, fontSize: '0.78rem', color: 'var(--text-tertiary)' }}>
-        Claude is researching your industry in real time — typically 30–60 seconds
+        Claude is researching your industry in real time — typically 30-60 seconds
       </div>
     </div>
   )
@@ -806,8 +823,10 @@ function MilestoneModal({ count, onContinue }: { count: number; onContinue: () =
         textAlign: 'center', boxShadow: 'var(--shadow-xl)',
         animation: 'fade-up 0.3s ease',
       }}>
-        {/* Emoji celebration */}
-        <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🎉</div>
+        {/* Material Icon sunburst instead of emoji */}
+        <div style={{ marginBottom: 12 }}>
+          <span className="mat-icon" style={{ fontSize: '48px', color: 'var(--brand)', display: 'block' }}>flare</span>
+        </div>
 
         <div style={{ fontSize: '1.4rem', fontWeight: 900, color: 'var(--brand)', marginBottom: 8, letterSpacing: '-0.03em' }}>
           You're on a roll!
@@ -825,10 +844,10 @@ function MilestoneModal({ count, onContinue }: { count: number; onContinue: () =
             About Briefed
           </div>
           {[
-            'Built by Brain Blooms LLC for continuous learners and career changers',
-            'Briefed is and always will be free — finding a new role is hard enough',
-            'Your resume and job descriptions are never stored or shared',
-            'Powered by Claude AI — the same AI that helped build this tool',
+            'Briefed is free — finding a new role is hard enough',
+            'Your resume and job descriptions are never stored',
+            'Built by Brain Blooms LLC for the continuous learners and career changers',
+            'Powered by Claude AI',
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 7, fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
               <span style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 1 }}>✓</span>
@@ -866,7 +885,7 @@ function MilestoneModal({ count, onContinue }: { count: number; onContinue: () =
         </button>
 
         <div style={{ marginTop: 10, fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>
-          Briefed is always free. No limits, no credit card, ever.
+          Briefed. Know your role before day one.
         </div>
       </div>
     </div>

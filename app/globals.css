@@ -91,31 +91,27 @@ h1, h2, h3, h4, h5 { font-weight: 700; line-height: 1.2; color: var(--text-prima
   to { transform: rotate(360deg); }
 }
 
-@keyframes rainbow-rotate {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+@keyframes orbit {
+  0%   { transform: rotate(var(--start)) translateX(22px) rotate(calc(-1 * var(--start))); opacity: 1; }
+  50%  { opacity: 0.5; }
+  100% { transform: rotate(calc(var(--start) + 360deg)) translateX(22px) rotate(calc(-1 * (var(--start) + 360deg))); opacity: 1; }
 }
 
 .rainbow-spinner {
+  position: relative;
   border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    hsl(0,   100%, 55%),
-    hsl(30,  100%, 55%),
-    hsl(60,  100%, 50%),
-    hsl(120, 100%, 45%),
-    hsl(180, 100%, 45%),
-    hsl(210, 100%, 55%),
-    hsl(270, 100%, 60%),
-    hsl(300, 100%, 55%),
-    hsl(330, 100%, 55%),
-    hsl(360, 100%, 55%)
-  );
-  -webkit-mask:
-    radial-gradient(farthest-side, transparent calc(100% - 5px), #fff calc(100% - 5px));
-  mask:
-    radial-gradient(farthest-side, transparent calc(100% - 5px), #fff calc(100% - 5px));
-  filter: blur(0.4px) saturate(1.2);
+}
+
+.rainbow-spinner .dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  margin: -4px 0 0 -4px;
+  animation: orbit var(--duration, 1.2s) linear infinite;
+  animation-delay: var(--delay, 0s);
 }
 @keyframes pulse {
   0%,100% { opacity: 1; }
